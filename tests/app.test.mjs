@@ -1,0 +1,10 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
+const html=await readFile('index.html','utf8');
+const repoText=await Promise.all(['index.html','README.md','sw.js','manifest.webmanifest'].map(f=>readFile(f,'utf8'))).then(a=>a.join('\n'));
+test('no publica la dieta ni conexiones remotas',()=>{assert.doesNotMatch(repoText,/1drv\.ms|onedrive|sharepoint|data\.json|fetch\(`data/i);assert.match(html,/type="file"/);assert.match(html,/parseWorkbook/)});
+test('configura iPhone y PWA para cubrir la zona segura',()=>{for(const v of ['viewport-fit=cover','black-translucent','safe-area-inset-top','100dvh','overscroll-behavior','display-mode:standalone'])assert.match(html,new RegExp(v))});
+test('usa Europe Madrid para identificar hoy sin UTC',()=>{assert.match(html,/ZONE='Europe\/Madrid'/);assert.match(html,/function madridToday/);assert.doesNotMatch(html,/function iso\(d\).*toISOString/)});
+test('mantiene vistas y metadatos',()=>{for(const v of ['Hoy','Semana','2 personas','Comida','Cena','Desayuno','Media mañana','Merienda','Tiempo aproximado','Preparar con antelación','Notas'])assert.match(html,new RegExp(v))});
+test('semana apila y abre cada receta',()=>{assert.match(html,/grid-template-columns:48px minmax\(0,1fr\)/);assert.match(html,/openDlg\(d,t\)/);assert.match(html,/weekMeal\(d,'Comida'/);assert.doesNotMatch(html,/grid-template-columns:48px 1fr 1fr/)});
