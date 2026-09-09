@@ -4,7 +4,7 @@ import { readFile } from 'node:fs/promises';
 const html=await readFile('index.html','utf8');
 const repoText=await Promise.all(['index.html','README.md','sw.js','manifest.webmanifest'].map(f=>readFile(f,'utf8'))).then(a=>a.join('\n'));
 test('no publica la dieta ni conexiones remotas',()=>{assert.doesNotMatch(repoText,/1drv\.ms|onedrive|sharepoint|data\.json|fetch\(`data/i);assert.match(html,/type="file"/);assert.match(html,/parseWorkbook/)});
-test('funde la parte superior con blanco',()=>{assert.match(html,/name="theme-color" content="#ffffff"/);assert.match(html,/linear-gradient\(to bottom,#fff 0/)});
+test('funde la parte superior con el gris del navegador',()=>{assert.match(html,/name="theme-color" content="#f2f3f6"/);assert.match(html,/linear-gradient\(to bottom,#f2f3f6 0/)});
 test('simplifica títulos y capitaliza ingredientes',()=>{assert.match(html,/function titlePart/);assert.match(html,/presets=/);assert.match(html,/function clean\(s\)\{return cap\(/)});
 test('configura iPhone y PWA para cubrir la zona segura',()=>{for(const v of ['viewport-fit=cover','black-translucent','safe-area-inset-top','100dvh','overscroll-behavior','display-mode:standalone'])assert.match(html,new RegExp(v))});
 test('usa Europe Madrid para identificar hoy sin UTC',()=>{assert.match(html,/ZONE='Europe\/Madrid'/);assert.match(html,/function madridToday/);assert.doesNotMatch(html,/function iso\(d\).*toISOString/)});
