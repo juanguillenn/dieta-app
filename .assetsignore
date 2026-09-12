@@ -1,0 +1,11 @@
+worker
+tests
+node_modules
+work
+.wrangler
+.gitignore
+README.md
+pnpm-lock.yaml
+.git
+package*.json
+wrangler.jsonc

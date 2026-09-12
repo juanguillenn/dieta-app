@@ -1,0 +1,7 @@
+import test from'node:test';import assert from'node:assert/strict';import{readFile}from'node:fs/promises';
+const worker=await readFile('worker/index.js','utf8'),config=await readFile('wrangler.jsonc','utf8');
+test('usa Worker Free sin containers ni servidores permanentes',()=>{assert.doesNotMatch(config,/containers|durable_objects/);assert.match(config,/nodejs_compat/);assert.match(config,/SEND_STATE/)});
+test('guarda cantidades reales con multipart binario y verifica persistencia',()=>{assert.match(worker,/quantity/);assert.match(worker,/Content-Disposition: form-data; name="operations"/);assert.match(worker,/client\.getLists\(true\)/);assert.match(worker,/AnyList no confirmó/)});
+test('clasifica activos y completados y aplica protección anti-duplicados',()=>{assert.match(worker,/out\.active\.push/);assert.match(worker,/out\.completed\.push/);assert.match(worker,/remove-shopping-list-item/);assert.match(worker,/expirationTtl:2592000/)});
+test('resume identificadores largos en una clave KV corta y estable',()=>{assert.match(worker,/crypto\.subtle\.digest\('SHA-256'/);assert.match(worker,/SEND_STATE\.get\(key/);assert.match(worker,/SEND_STATE\.put\(key/)});
+test('protege toda la aplicación con contraseña y cookie firmada',()=>{assert.match(worker,/DIETA_ACCESS_PASSWORD/);assert.match(worker,/DIETA_SESSION_SECRET/);assert.match(worker,/HttpOnly; Secure; SameSite=Strict/);assert.match(worker,/crypto\.subtle\.sign/)});

@@ -1,44 +1,25 @@
-# Dieta privada
+# Dieta privada (1.0)
 
-Dashboard móvil publicado con GitHub Pages. El repositorio y la web no contienen
-la dieta ni un enlace al Excel. Cada usuario selecciona su propio `.xlsm`, `.xlsx`
-o `.xls`; el archivo se procesa localmente en el navegador y la copia de trabajo,
-las notas y las preferencias permanecen en el almacenamiento de ese dispositivo.
+Dieta importa el Excel localmente y no lo sube ni lo modifica. La vista **Compra** agrupa ingredientes y cantidades compatibles, muestra su origen semanal, permite editar la checklist y genera `Producto (cantidad unidad)` para copiar en cualquier dispositivo.
 
-GitHub Pages solo sirve el código estático. Para actualizar la dieta, pulsa el
-botón de importar y vuelve a seleccionar el Excel fuente. El archivo fuente no se
-modifica ni se sube desde la aplicación.
+## Envío directo a AnyList
 
-La vista **Compra** consolida los ingredientes de la semana, suma cantidades
-compatibles, los agrupa por categorías y guarda localmente la checklist. El botón
-**Copiar compra** genera una línea por producto en el formato
-`Producto (cantidad unidad)`, listo para pegar en AnyList.
+El frontend y el adaptador mínimo se ejecutan en un Cloudflare Worker Free del mismo dominio. Las credenciales sólo existen como secretos del Worker. Como AnyList no ofrece una API pública para este flujo, la integración utiliza el protobuf de la biblioteca comunitaria `anylist`.
 
-En dispositivos Apple, **Enviar a AnyList** abre el atajo personal
-`Enviar a AnyList` y le entrega ese mismo texto. Para configurarlo en iPhone:
+1. Crea un namespace KV gratuito para la protección anti-duplicados y configura su identificador como `SEND_STATE` en `wrangler.jsonc`.
+2. Crea los secretos `ANYLIST_EMAIL` y `ANYLIST_PASSWORD` con `wrangler secret put`; nunca los guardes en archivos ni en Git.
+3. Despliega con `npm run deploy` y comprueba que existe exactamente **Lista de la compra** en AnyList.
+4. Crea `DIETA_ACCESS_PASSWORD` y `DIETA_SESSION_SECRET` como secretos. El Worker protege todos los recursos y entrega una cookie de sesión `HttpOnly`, `Secure` y `SameSite=Strict`.
+5. Prueba la previsualización antes del primer envío real.
 
-1. Instala AnyList e inicia sesión; abre **Atajos** y crea un atajo llamado
-   exactamente `Enviar a AnyList`.
-2. Añade **Dividir texto**, usa `Entrada del atajo` como texto y selecciona
-   **Líneas nuevas** como separador.
-3. Añade **Repetir con cada ítem** sobre el resultado de `Dividir texto`.
-4. Dentro de la repetición, añade la acción oficial de AnyList para añadir un
-   artículo. Usa `Ítem repetido` como nombre y elige la lista de compra destino.
-5. Guarda el atajo y ejecútalo una vez desde Atajos para conceder los permisos
-   que soliciten iOS o AnyList.
+Los artículos ya activos se muestran y se omiten. Los completados se recrean con la cantidad nueva e intentan conservar categoría y tiendas. KV conserva durante 30 días la protección anti-duplicados. **Regenerar compra** inicia conscientemente un envío nuevo.
 
-La web entrega cada línea completa (`Producto (cantidad unidad)`) como nombre;
-no presupone que AnyList vaya a separar la cantidad. AnyList no ofrece una API
-pública para que esta PWA confirme la inserción. Por eso Dieta marca el envío al
-lanzar el atajo y bloquea un segundo intento hasta regenerar; si el atajo falla,
-regenera antes de reintentarlo. En Android se utiliza la copia al portapapeles.
+Si el servidor no está disponible, **Copiar compra** sigue funcionando. Cuando el navegador bloquea el portapapeles aparece un cuadro visible con el texto ya seleccionado.
 
-En iPhone puede instalarse desde Safari con “Añadir a pantalla de inicio”. En ese
-modo usa toda la zona segura. En una pestaña normal, Safari conserva sus propias
-barras del navegador, que una web no puede ocultar.
-
-## Pruebas
+## Validación
 
 ```sh
 npm test
+npm run check
+npx wrangler deploy --dry-run
 ```
